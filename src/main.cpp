@@ -103,6 +103,4 @@ void setup() {
   Serial.println("[*] Web server started!");
 }
 
-void loop() {
-  // ... (your other code here) ...
-}
+void loop() {}
