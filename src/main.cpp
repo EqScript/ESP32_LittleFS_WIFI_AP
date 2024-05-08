@@ -1,7 +1,7 @@
 #include <WiFi.h>
-#include <AsyncTCP.h> // Provides functionalities for asynchronous TCP connections
+#include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <LittleFS.h> // For storing HTML/CSS files
+#include <LittleFS.h>
 #include <FS.h>
 #include "LittleFS_func.h"
 
@@ -10,7 +10,10 @@ const char* password = "88888888";
 
 const bool FORMAT_LITTLEFS_IF_FAILED = true;
 
-AsyncWebServer server(80); // Declare server object globally
+AsyncWebServer server(80);
+
+// Define the GPIO pin for the LED
+const int LED_PIN = 8;
 
 void setup() {
   Serial.begin(115200);
@@ -37,68 +40,31 @@ void setup() {
   Serial.print("[*] IP Address: ");
   Serial.println(address);
 
-  // Define HTML content with blue background and white header
-  const char index_html[] PROGMEM = R"(<!DOCTYPE html>
-<html>
-  <head>
-    <title>Blue Systems</title>
-    <style>
-      /* Set the margin and padding of the body to 0 */
-      body {
-        margin: 0;
-        padding: 0;
-        /* Set the background to a linear gradient from top to bottom */
-        background-image: linear-gradient(to bottom, #002, #006, #007);
-        height: 100vh; /* Set the height of the body to 100% of the viewport height */
-      }
+  // Set the LED pin as output
+  pinMode(LED_PIN, OUTPUT);
 
-      /* Set the margin and padding of the header to 0 */
-      header {
-        margin: 0;
-        padding: 0;
-        /* Set the height of the header to 100% of the viewport height */
-        height: 100vh;
-        background-color: transparent; /* Set the background color of the header to transparent */
-        display: flex; /* Use flexbox to center the content */
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-
-      h1 {
-        color: #ddd;
-        font-family: 'Eurostyle', sans-serif;
-        font-size: 64px;
-        text-shadow: 12px 10px 10px #000;
-        margin: 0;
-      }
-
-      h3 {
-        color: #ddd;
-        font-family: 'century-gotic', sans-serif;
-        font-size: 36px;
-        text-shadow: 12px 10px 10px #000;
-        margin: 20px 0 0 0;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1><b>Blue Systems</b></h1>
-      <h3><em>ESP32-WROOM-32U Board</em></h3>
-    </header>
-  </body>
-</html>)";
+  // Define the route to handle LED control requests
+  server.on("/led", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String state = request->getParam("state")->value();
+    if (state == "on") {
+      digitalWrite(LED_PIN, HIGH);
+      request->send(200, "text/plain", "LED turned on");
+    } else if (state == "off") {
+      digitalWrite(LED_PIN, LOW);
+      request->send(200, "text/plain", "LED turned off");
+    } else {
+      request->send(400, "text/plain", "Invalid LED state");
+    }
+  });
 
   // Serve index.html for root path
-    server.on("/", HTTP_GET, [index_html](AsyncWebServerRequest *request) {
-    request->send(200, "text/html", index_html);
-    });
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/html/index.html", "text/html");
+  });
 
   // Optionally map static files under /html/ path
   server.serveStatic("/", LittleFS, "/html/");
 
-  // Start the web server
   server.begin();
   Serial.println("[*] Web server started!");
 }

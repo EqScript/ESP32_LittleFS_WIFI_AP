@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Blue Systems</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-image: linear-gradient(to bottom, #002, #006, #007);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .button {
+        width: 200px;
+        height: 100px;
+        background-color: #ddd;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 36px;
+        font-family: 'century-gotic', sans-serif;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .button.active {
+        background-color: #4CAF50;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="button" id="led-button">Toggle LED</div>
+    <script>
+      const ledButton = document.getElementById('led-button');
+      let ledState = false;
+
+      ledButton.addEventListener('click', () => {
+        ledState = !ledState;
+        ledButton.classList.toggle('active');
+        // Send a request to the ESP32-C3 to control the LED
+        fetch('/led?state=' + (ledState ? 'on' : 'off'))
+          .then(response => response.text())
+          .then(data => console.log(data));
+      });
+    </script>
+  </body>
+</html>
