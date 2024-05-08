@@ -17,7 +17,10 @@ const int LED_PIN = 8;
 
 void setup() {
   Serial.begin(115200);
-
+  delay(2000);
+  Serial.println("[*] System boot...");
+  delay(1000);
+   Serial.println("[*] LittleFS init...");
   // Initialize LittleFS
   if (!LittleFS.begin()) {
     Serial.print("[!] LittleFS volume not found, formatting...");
@@ -30,7 +33,7 @@ void setup() {
   } else {
     Serial.print("[*] LittleFS started!");
   }
-
+  Serial.println("[*] Starting AP...");
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid, password);
   IPAddress address = WiFi.softAPIP();
@@ -42,7 +45,7 @@ void setup() {
 
   // Set the LED pin as output
   pinMode(LED_PIN, OUTPUT);
-
+   Serial.println("[*] Starting server...");
   // Define the route to handle LED control requests
   server.on("/led", HTTP_GET, [](AsyncWebServerRequest *request) {
     String state = request->getParam("state")->value();
